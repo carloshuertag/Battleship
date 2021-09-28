@@ -6,16 +6,16 @@ package Models;
  */
 public class Ship {
     private int x, y, length;
-    private int orintation;
+    private boolean vertical;
 
     public Ship() {
     }
 
-    public Ship(int x, int y, int length, int orintation) {
+    public Ship(int x, int y, int length, boolean vertical) {
         this.x = x;
         this.y = y;
         this.length = length;
-        this.orintation = orintation;
+        this.vertical = vertical;
     }
 
     public int getX() {
@@ -42,11 +42,11 @@ public class Ship {
         this.length = length;
     }
 
-    public int getOrintation() {
-        return orintation;
+    public boolean getVertical() {
+        return vertical;
     }
 
-    public void setOrintation(int orintation) {
-        this.orintation = orintation;
+    public void setVertical(boolean vertical) {
+        this.vertical = vertical;
     }
 }
