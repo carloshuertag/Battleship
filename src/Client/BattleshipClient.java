@@ -40,18 +40,19 @@ public class BattleshipClient extends JFrame {
         setComponents();
         addComponents();
         setFrame();
+        getShipsCoordenates();
+        setShips();
     }
 
     public static void main(String args[]) {
         new BattleshipClient();
-        getShipsCoordenates();
     }
 
-    private static void getShipsCoordenates() {
+    private void getShipsCoordenates() {
         int x = 0;
         int y = 0;
         boolean flag = false, vertical = false;
-        for (int i = 0; i < 7; i++) {
+        for (int i = 0; i < ships.length; i++) {
             do {
                 try {
                     x = Integer.parseInt(JOptionPane.showInputDialog(null,
@@ -66,10 +67,19 @@ public class BattleshipClient extends JFrame {
                             "Confirm vertical alignment, or else it will be horizontal",
                             "Enter alignment", JOptionPane.YES_NO_OPTION,
                             JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION;
+                    if(vertical){
+                        if (y + Properties.SHIPLENGTHS[i] > 10) {
+                            throw new Exception("Invalid postion for 0-10");
+                        }
+                    } else {
+                        if (x + Properties.SHIPLENGTHS[i] > 10) {
+                            throw new Exception("Invalid position A-J");
+                        }
+                    }
                     flag = false;
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(null,
-                            "Invalid input, try again", "Oops",
+                            "Invalid input, try again", "Oops" + ex.getMessage(),
                             JOptionPane.ERROR_MESSAGE);
                     flag = true;
                 }
@@ -77,6 +87,26 @@ public class BattleshipClient extends JFrame {
             ships[i] = new Ship(Properties.SHIPNAMES[i], x, y,
                     Properties.SHIPLENGTHS[i], vertical);
             System.out.println(ships[i]);
+        }
+    }
+
+    private void setShips() {
+        int x, y;
+        for (int i = 0; i < ships.length; i++) {
+            x = ships[i].getX();
+            y = ships[i].getY();
+            for (int j = 0; j < ships[i].getLength(); j++) {
+                labelsMatrix[x][y].setBackground(Color.DARK_GRAY);
+                labelsMatrix[x][y].setText(String.valueOf(
+                        ships[i].getName().charAt(0)));
+                labelsMatrix[x][y].setForeground(Color.CYAN);
+                labelsMatrix[x][y].setOpaque(true);
+                if(ships[i].getVertical()) {
+                    y++;
+                } else {
+                    x++;
+                }
+            }
         }
     }
 
@@ -143,6 +173,7 @@ public class BattleshipClient extends JFrame {
         for (int i = 0; i < Properties.DIMENSION; i++) {
             for (int j = 0; j < Properties.DIMENSION; j++) {
                 labelsMatrix[i][j] = new JLabel("≈", SwingConstants.CENTER);
+                labelsMatrix[i][j].setOpaque(true);
                 setCell(labelsMatrix[i][j], Color.CYAN);
                 labelsMatrix[i][j].setForeground(Color.BLUE);
                 userTable.add(labelsMatrix[i][j]);
@@ -157,6 +188,8 @@ public class BattleshipClient extends JFrame {
         for (int i = 0; i < Properties.DIMENSION; i++) {
             xs[i] = new JLabel(String.valueOf(i + 1));
             setCell(xs[i], Color.GRAY);
+            xs[i].setOpaque(true);
+            xs[i].setForeground(Color.WHITE);
             pcTable.add(xs[i]);
         }
         for (int i = 0; i < Properties.DIMENSION; i++) {
@@ -164,6 +197,8 @@ public class BattleshipClient extends JFrame {
                 if (j == 0) {
                     ys[i] = new JLabel(String.valueOf((char) (i + 65)));
                     setCell(ys[i], Color.GRAY);
+                    ys[i].setOpaque(true);
+                    ys[i].setForeground(Color.WHITE);
                     pcTable.add(ys[i]);
                 }
                 buttonsMatrix[i][j] = new JButton("≈");
