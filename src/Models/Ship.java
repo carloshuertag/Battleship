@@ -5,13 +5,24 @@ package Models;
  * @author huert
  */
 public class Ship {
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    private String name;
     private int x, y, length;
     private boolean vertical;
 
     public Ship() {
     }
 
-    public Ship(int x, int y, int length, boolean vertical) {
+    public Ship(String name, int x, int y, int length, boolean vertical) {
+        this.name = name;
         this.x = x;
         this.y = y;
         this.length = length;
@@ -48,5 +59,11 @@ public class Ship {
 
     public void setVertical(boolean vertical) {
         this.vertical = vertical;
+    }
+
+    @Override
+    public String toString() {
+        return "Ship{" + "name=" + name + ", x=" + x + ", y=" + y + ", length="
+                + length + ", vertical=" + vertical + '}';
     }
 }

@@ -10,11 +10,14 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import Game.Properties;
+import Models.Ship;
 import java.awt.Color;
 import java.awt.GridLayout;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.SwingConstants;
 import javax.swing.border.Border;
 
 /**
@@ -23,10 +26,11 @@ import javax.swing.border.Border;
  */
 public class BattleshipClient extends JFrame {
 
+    private static Ship[] ships;
     private JPanel mainPanel, tablesPanel, infoPanel, userTable, pcTable;
     private JButton buttonsMatrix[][];
     private JLabel labelsMatrix[][], ys[], xs[], shipsNames[], shipsInfo[],
-            turn, attempts;
+            turn, attempts, title, username;
     private Border borders;
     private int valuesMatrix[][];
 
@@ -40,6 +44,40 @@ public class BattleshipClient extends JFrame {
 
     public static void main(String args[]) {
         new BattleshipClient();
+        getShipsCoordenates();
+    }
+
+    private static void getShipsCoordenates() {
+        int x = 0;
+        int y = 0;
+        boolean flag = false, vertical = false;
+        for (int i = 0; i < 7; i++) {
+            do {
+                try {
+                    x = Integer.parseInt(JOptionPane.showInputDialog(null,
+                            "Enter numeric (1-10) initial coordante for "
+                            + Properties.SHIPNAMES[i], "Enter coordenates",
+                            JOptionPane.QUESTION_MESSAGE)) - 1;
+                    y = JOptionPane.showInputDialog(null,
+                            "Enter alphanumeric (A-J) initial coordante for "
+                            + Properties.SHIPNAMES[i], "Enter coordenates",
+                            JOptionPane.QUESTION_MESSAGE).charAt(0) - 65;
+                    vertical = JOptionPane.showConfirmDialog(null,
+                            "Confirm vertical alignment, or else it will be horizontal",
+                            "Enter alignment", JOptionPane.YES_NO_OPTION,
+                            JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION;
+                    flag = false;
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(null,
+                            "Invalid input, try again", "Oops",
+                            JOptionPane.ERROR_MESSAGE);
+                    flag = true;
+                }
+            } while (flag);
+            ships[i] = new Ship(Properties.SHIPNAMES[i], x, y,
+                    Properties.SHIPLENGTHS[i], vertical);
+            System.out.println(ships[i]);
+        }
     }
 
     private void setComponents() {
@@ -48,7 +86,8 @@ public class BattleshipClient extends JFrame {
     }
 
     private void addComponents() {
-        for(int i = 0; i < 7; i++) {
+        mainPanel.add(title, BorderLayout.NORTH);
+        for (int i = 0; i < 7; i++) {
             infoPanel.add(shipsNames[i]);
             infoPanel.add(shipsInfo[i]);
         }
@@ -58,6 +97,7 @@ public class BattleshipClient extends JFrame {
         tablesPanel.add(pcTable);
         tablesPanel.add(userTable);
         mainPanel.add(tablesPanel, BorderLayout.CENTER);
+        mainPanel.add(username, BorderLayout.SOUTH);
         add(mainPanel);
     }
 
@@ -66,12 +106,13 @@ public class BattleshipClient extends JFrame {
         setResizable(false);
         setSize(1280, 720);
         setVisible(true);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
     }
-    
+
     private void initPanels() {
-        mainPanel = new JPanel(new BorderLayout());
-        tablesPanel = new JPanel(new GridLayout(2, 0, 0, 4));
-        infoPanel = new JPanel(new GridLayout(16, 0, 0, 4));
+        mainPanel = new JPanel(new BorderLayout(10, 10));
+        tablesPanel = new JPanel(new GridLayout(2, 0, 0, 10));
+        infoPanel = new JPanel(new GridLayout(16, 0, 0, 5));
         userTable = new JPanel(new GridLayout(Properties.DIMENSION,
                 Properties.DIMENSION, 2, 2));
         pcTable = new JPanel(new GridLayout(Properties.DIMENSION + 1,
@@ -87,25 +128,23 @@ public class BattleshipClient extends JFrame {
         borders = BorderFactory.createLineBorder(Color.BLUE);
         shipsNames = new JLabel[7];
         shipsInfo = new JLabel[7];
-        shipsNames[0] = new JLabel("Submarine");
-        shipsNames[1] = new JLabel("Battleship");
-        shipsNames[2] = new JLabel("Cruiser Alpha");
-        shipsNames[3] = new JLabel("Cruiser Beta");
-        shipsNames[4] = new JLabel("Destroyer Alpha");
-        shipsNames[5] = new JLabel("Destroyer Beta");
-        shipsNames[6] = new JLabel("Destroyer Charlie");
-        for(int i = 0; i < 7; i++) {
+        for (int i = 0; i < 7; i++) {
+            shipsNames[i] = new JLabel(Properties.SHIPNAMES[i]);
             shipsInfo[i] = new JLabel("Unattacked");
         }
         turn = new JLabel("Turn: Username/PC");
         attempts = new JLabel("Attempts remaining: 1");
+        title = new JLabel("Battleship", SwingConstants.CENTER);
+        username = new JLabel("Username", SwingConstants.CENTER);
+        ships = new Ship[7];
     }
 
     private void setUserTable() {
         for (int i = 0; i < Properties.DIMENSION; i++) {
             for (int j = 0; j < Properties.DIMENSION; j++) {
-                labelsMatrix[i][j] = new JLabel();
-                setCell(labelsMatrix[i][j], Color.GRAY);
+                labelsMatrix[i][j] = new JLabel("≈", SwingConstants.CENTER);
+                setCell(labelsMatrix[i][j], Color.CYAN);
+                labelsMatrix[i][j].setForeground(Color.BLUE);
                 userTable.add(labelsMatrix[i][j]);
             }
         }
@@ -127,8 +166,9 @@ public class BattleshipClient extends JFrame {
                     setCell(ys[i], Color.GRAY);
                     pcTable.add(ys[i]);
                 }
-                buttonsMatrix[i][j] = new JButton();
+                buttonsMatrix[i][j] = new JButton("≈");
                 setCell(buttonsMatrix[i][j], Color.CYAN);
+                buttonsMatrix[i][j].setForeground(Color.BLUE);
                 pcTable.add(buttonsMatrix[i][j]);
             }
         }
