@@ -5,6 +5,7 @@
  */
 package Client;
 
+import Game.CellActionListener;
 import java.awt.BorderLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -157,6 +158,8 @@ public class BattleshipClient extends JFrame {
                 }
                 buttonsMatrix[i][j] = new JButton("≈");
                 setCell(buttonsMatrix[i][j], Color.CYAN, Color.BLUE);
+                buttonsMatrix[i][j].addActionListener(
+                        new CellActionListener(i, j));
                 pcTable.add(buttonsMatrix[i][j]);
             }
         }
@@ -178,9 +181,13 @@ public class BattleshipClient extends JFrame {
     }
 
     private void hello() throws UnknownHostException, SocketException,
-            IOException{
-        username = JOptionPane.showInputDialog(null, "Enter your name",
-                "Welcome", JOptionPane.QUESTION_MESSAGE);
+            IOException {
+        boolean flag = false;
+        do {
+            username = JOptionPane.showInputDialog(null, "Enter your name",
+                    "Welcome", JOptionPane.QUESTION_MESSAGE);
+            flag = username.equals("");
+        } while (flag);
         serverAddrs = InetAddress.getByName(Properties.SERVER_IP);
         byte[] buffer = username.getBytes();
         client = new DatagramSocket();

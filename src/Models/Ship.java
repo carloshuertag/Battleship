@@ -1,19 +1,14 @@
 package Models;
 
+import java.io.Serializable;
+
 /**
  *
  * @author huert
  */
-public class Ship {
+public class Ship implements Serializable {
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
+    private static final long serialVersionUID = 1L;
     private String name;
     private int x, y, length;
     private boolean vertical;
@@ -27,6 +22,14 @@ public class Ship {
         this.y = y;
         this.length = length;
         this.vertical = vertical;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public int getX() {
