@@ -20,6 +20,8 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -50,13 +52,13 @@ public class BattleshipClient extends JFrame {
         setComponents();
         addComponents();
         setFrame();
-        try {
+        /*try {
             hello();
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(null,
                     "Cannot connect to server", "Oops" + ex.getMessage(),
                     JOptionPane.ERROR_MESSAGE);
-        }
+        }*/
         getShipsCoordenates();
         setShips();
     }
@@ -201,6 +203,8 @@ public class BattleshipClient extends JFrame {
         int x = 0;
         int y = 0;
         boolean flag = false, vertical = false;
+        Ship tmp = null;
+        List <Ship> valid = new ArrayList<>();
         for (int i = 0; i < ships.length; i++) {
             do {
                 try {
@@ -225,30 +229,37 @@ public class BattleshipClient extends JFrame {
                             throw new Exception("Invalid position A-J");
                         }
                     }
+                    tmp = new Ship(Properties.SHIPNAMES[i], x, y,
+                                    Properties.SHIPLENGTHS[i], vertical);
+                    if(!Ship.isValidPosition(valid, tmp)){
+                        throw new Exception("Invalid position: overlapped");
+                    }
                     flag = false;
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(null,
-                            "Invalid input, try again", "Oops" + ex.getMessage(),
+                            "Invalid input, try again", "Oops! " + ex.getMessage(),
                             JOptionPane.ERROR_MESSAGE);
                     flag = true;
                 }
             } while (flag);
-            ships[i] = new Ship(Properties.SHIPNAMES[i], x, y,
-                    Properties.SHIPLENGTHS[i], vertical);
+            ships[i] = tmp;
+            valid.add(tmp);
         }
+        valid.clear();
     }
 
     private void setShips() {
         int x, y;
         for (int i = 0; i < ships.length; i++) {
+            System.out.println(ships[i]);
             x = ships[i].getX();
             y = ships[i].getY();
             for (int j = 0; j < ships[i].getLength(); j++) {
-                labelsMatrix[x][y].setBackground(Color.DARK_GRAY);
-                labelsMatrix[x][y].setText(String.valueOf(
+                labelsMatrix[y][x].setBackground(Color.DARK_GRAY);
+                labelsMatrix[y][x].setText(String.valueOf(
                         ships[i].getName().charAt(0)));
-                labelsMatrix[x][y].setForeground(Color.CYAN);
-                labelsMatrix[x][y].setOpaque(true);
+                labelsMatrix[y][x].setForeground(Color.CYAN);
+                labelsMatrix[y][x].setOpaque(true);
                 if (ships[i].getVertical()) {
                     y++;
                 } else {
