@@ -52,13 +52,13 @@ public class BattleshipClient extends JFrame {
         setComponents();
         addComponents();
         setFrame();
-        /*try {
+        try {
             hello();
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(null,
                     "Cannot connect to server", "Oops" + ex.getMessage(),
                     JOptionPane.ERROR_MESSAGE);
-        }*/
+        }
         getShipsCoordenates();
         setShips();
     }
