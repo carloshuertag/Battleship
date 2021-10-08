@@ -46,7 +46,10 @@ public class BattleshipClient extends JFrame {
     private InetAddress serverAddrs;
     private DatagramSocket client;
     private String username;
-    private int valuesMatrix[][];
+    private DatagramPacket packet;
+    private ByteArrayInputStream bais;
+    private ObjectInputStream ois;
+    private byte[] buffer;
 
     public BattleshipClient() {
         initPanels();
@@ -59,6 +62,7 @@ public class BattleshipClient extends JFrame {
         setShips(ships, labelsMatrix);
         setReady();
         getServerShips();
+        play();
     }
 
     public static void main(String args[]) {
@@ -81,7 +85,6 @@ public class BattleshipClient extends JFrame {
         xs = new JLabel[Properties.DIMENSION][2];
         ys = new JLabel[Properties.DIMENSION][2];
         refLabel = new JLabel[2];
-        valuesMatrix = new int[Properties.DIMENSION][Properties.DIMENSION];
         borders = BorderFactory.createLineBorder(Color.BLUE);
         shipsNames = new JLabel[7];
         shipsInfo = new JLabel[7];
@@ -180,10 +183,10 @@ public class BattleshipClient extends JFrame {
         setVisible(true);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
     }
-    
-    private void connectWithServer(){
+
+    private void connectWithServer() {
         boolean flag = false;
-        do{
+        do {
             try {
                 hello();
             } catch (Exception ex) {
@@ -192,7 +195,7 @@ public class BattleshipClient extends JFrame {
                         JOptionPane.ERROR_MESSAGE);
                 flag = true;
             }
-        } while(flag);
+        } while (flag);
     }
 
     private void hello() throws UnknownHostException, SocketException,
@@ -207,14 +210,14 @@ public class BattleshipClient extends JFrame {
         byte[] buffer = username.getBytes();
         client = new DatagramSocket();
         client.setReuseAddress(true);
-        DatagramPacket packet = new DatagramPacket(buffer, buffer.length,
+        packet = new DatagramPacket(buffer, buffer.length,
                 serverAddrs, Properties.PORT);
         client.send(packet);
         buffer = new byte[65535];
         packet = new DatagramPacket(buffer, buffer.length,
                 serverAddrs, Properties.PORT);
         client.receive(packet);
-        if(new String(packet.getData(), 0, packet.getLength()).equals("start")){
+        if (new String(packet.getData(), 0, packet.getLength()).equals("start")) {
             return;
         } else {
             throw new Exception("Cannot connect to server, try again");
@@ -226,7 +229,7 @@ public class BattleshipClient extends JFrame {
         int y = 0;
         boolean flag = false, vertical = false;
         Ship tmp = null;
-        List <Ship> valid = new ArrayList<>();
+        List<Ship> valid = new ArrayList<>();
         for (int i = 0; i < ships.length; i++) {
             do {
                 try {
@@ -252,8 +255,8 @@ public class BattleshipClient extends JFrame {
                         }
                     }
                     tmp = new Ship(Properties.SHIPNAMES[i], x, y,
-                                    Properties.SHIPLENGTHS[i], vertical);
-                    if(!Ship.isValidPosition(valid, tmp)){
+                            Properties.SHIPLENGTHS[i], vertical);
+                    if (!Ship.isValidPosition(valid, tmp)) {
                         throw new Exception("Invalid position: overlapped");
                     }
                     flag = false;
@@ -278,12 +281,12 @@ public class BattleshipClient extends JFrame {
             y = ships[i].getY();
             for (int j = 0; j < ships[i].getLength(); j++) {
                 matrix[y][x].setBackground(Color.DARK_GRAY);
-                if(matrix[y][x] instanceof JLabel){
-                    ((JLabel)(matrix[y][x])).setText(String.valueOf(
-                        ships[i].getName().charAt(0)));
-                } else if (matrix[y][x] instanceof JButton){
-                    ((JButton)(matrix[y][x])).setText(String.valueOf(
-                        ships[i].getName().charAt(0)));
+                if (matrix[y][x] instanceof JLabel) {
+                    ((JLabel) (matrix[y][x])).setText(String.valueOf(
+                            ships[i].getName().charAt(0)));
+                } else if (matrix[y][x] instanceof JButton) {
+                    ((JButton) (matrix[y][x])).setText(String.valueOf(
+                            ships[i].getName().charAt(0)));
                 }
                 matrix[y][x].setForeground(Color.CYAN);
                 matrix[y][x].setOpaque(true);
@@ -295,41 +298,92 @@ public class BattleshipClient extends JFrame {
             }
         }
     }
-    
+
     private void setReady() {
-        byte[] buffer = new String("ready").getBytes();
-        DatagramPacket packet = new DatagramPacket(buffer, buffer.length,
+        buffer = new String("ready").getBytes();
+        packet = new DatagramPacket(buffer, buffer.length,
                 serverAddrs, Properties.PORT);
         try {
             client.send(packet);
-        } catch(IOException ex){
+        } catch (IOException ex) {
             JOptionPane.showMessageDialog(null,
-                        "Cannot connect to server", "Oops" + ex.getMessage(),
-                        JOptionPane.ERROR_MESSAGE);
+                    "Cannot connect to server", "Oops" + ex.getMessage(),
+                    JOptionPane.ERROR_MESSAGE);
             dispose();
         }
     }
-    
-    private void getServerShips(){
-        byte[] buffer = new byte[65535];
-        DatagramPacket packet;
-        ByteArrayInputStream bais;
-        ObjectInputStream ois;
+
+    private void getServerShips() {
+        buffer = new byte[65535];
+        packet = new DatagramPacket(buffer, 65535);
         try {
-            for(int i = 0; i < Properties.SHIPNAMES.length; i++){
-                packet = new DatagramPacket(buffer, 65535);
+            for (int i = 0; i < Properties.SHIPNAMES.length; i++) {
                 client.receive(packet);
                 bais = new ByteArrayInputStream(packet.getData());
                 ois = new ObjectInputStream(bais);
-                serverShips[i] = (Ship)ois.readObject();
+                serverShips[i] = (Ship) ois.readObject();
             }
-            setShips(serverShips, buttonsMatrix);
-        } catch(Exception ex){
+        } catch (Exception ex) {
             JOptionPane.showMessageDialog(null,
-                        "Cannot connect to server", "Oops" + ex.getMessage(),
-                        JOptionPane.ERROR_MESSAGE);
+                    "Cannot connect to server", "Oops" + ex.getMessage(),
+                    JOptionPane.ERROR_MESSAGE);
             dispose();
         }
+    }
+
+    private void play() {
+        buffer = new byte[65535];
+        packet = new DatagramPacket(buffer, 65535);
+        boolean t = false, end = false, flag = false;
+        int x = 0, y = 0;
+        String shoot = "";
+        List<String> prevShoots = new ArrayList<>();
+        try {
+            client.receive(packet);
+            t = Boolean.parseBoolean(new String(packet.getData(), 0, packet.getLength()));
+            while (!end) {
+                if (t) { //ServerTurn
+
+                } else { //Client turn
+                    do {
+                        try {
+                            x = Integer.parseInt(JOptionPane.showInputDialog(null,
+                                    "Enter numeric (1-10) coordante to shoot",
+                                    "Enter coordenates",
+                                    JOptionPane.QUESTION_MESSAGE)) - 1;
+                            y = JOptionPane.showInputDialog(null,
+                                    "Enter alphanumeric (A-J) coordante to shoot ",
+                                    "Enter coordenates",
+                                    JOptionPane.QUESTION_MESSAGE).charAt(0) - 65;
+                            if (y > 9 || x > 9 || x < 0 || y < 0) {
+                                throw new Exception("Invalid coordenates, must be 0-10, A-J");
+                            }
+                            shoot = x + "," + y;
+                            if (prevShoots.contains(shoot)) {
+                                throw new Exception("Invalid coordenates, repeated shot");
+                            }
+                            prevShoots.add(shoot);
+                            flag = false;
+                        } catch (Exception ex) {
+                            JOptionPane.showMessageDialog(null,
+                                    "Invalid input, try again", "Oops! " + ex.getMessage(),
+                                    JOptionPane.ERROR_MESSAGE);
+                            flag = true;
+                        }
+                    } while (flag);
+                    buffer = shoot.getBytes();
+                    packet = new DatagramPacket(buffer, buffer.length);
+                    client.send(packet);
+
+                }
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(null,
+                    "Cannot connect to server", "Oops" + ex.getMessage(),
+                    JOptionPane.ERROR_MESSAGE);
+            dispose();
+        }
+
     }
 
 }
