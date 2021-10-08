@@ -6,8 +6,12 @@
 package Server;
 import Game.Properties;
 import Models.Ship;
-import java.net.*;
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectOutputStream;
+import java.net.DatagramSocket;
+import java.net.DatagramPacket;
+import java.net.InetAddress;
+import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.List;
@@ -19,23 +23,38 @@ public class BattleshipServer {
     
     public static void main(String args[]){
         try{
-            int max=20;
-            InetAddress dir = InetAddress.getByName("127.0.0.1");
+            InetAddress dir = InetAddress.getByName(Properties.SERVER_IP);
             DatagramSocket s = new DatagramSocket(Properties.PORT);
+            s.setReuseAddress(true);
             System.out.println("Servidor de datagrama iniciado en el puerto "+s.getLocalPort() + " Esperando jugadores...");
             Ship[] ships = new Ship[7];
-            while(true){
-            //InetSocketAddress socketAddress = new InetSocketAddress(s.getInetAddress(), Properties.PORT );
-            //s.connect(socketAddress);
-            DatagramPacket p = new DatagramPacket(new byte[max],max);
-            s.receive(p);
-            String username = new String(p.getData());
-            System.out.println("Username: " + username + " is ready to play, match starts");
-            setShipsCoordenates(ships);
-            
+            for(;;){
+                DatagramPacket packet = new DatagramPacket(new byte[65535],65535);
+                s.receive(packet);
+                String username = new String(packet.getData(), 0, packet.getLength());
+                System.out.println("Hello user: " + username + " , match starts");
+                s.connect(packet.getSocketAddress());
+                byte[] buff = new String("start").getBytes();
+                packet = new DatagramPacket(buff, buff.length);
+                s.send(packet);
+                setShipsCoordenates(ships);
+                packet = new DatagramPacket(new byte[65535],65535);
+                s.receive(packet);
+                if(new String(packet.getData(), 0, packet.getLength()).equals("ready")){
+                    for(Ship ship: ships){
+                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                        ObjectOutputStream oos = new ObjectOutputStream(baos);
+                        oos.writeObject(ship);
+                        oos.flush();
+                        buff = baos.toByteArray();
+                        packet = new DatagramPacket(buff, buff.length);
+                        s.send(packet);
+                    }
+                } else {
+                    throw new Exception("Client not ready");
+                }
             }
-            
-        }catch(Exception e){
+        } catch(Exception e){
             e.printStackTrace();
         }
     }

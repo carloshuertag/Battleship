@@ -14,7 +14,9 @@ import Game.Properties;
 import Models.Ship;
 import java.awt.Color;
 import java.awt.GridLayout;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -35,7 +37,7 @@ import javax.swing.border.Border;
  */
 public class BattleshipClient extends JFrame {
 
-    private Ship[] ships;
+    private Ship[] ships, serverShips;
     private JPanel mainPanel, tablesPanel, infoPanel, userTable, pcTable;
     private JButton buttonsMatrix[][];
     private JLabel labelsMatrix[][], ys[][], xs[][], shipsNames[], shipsInfo[],
@@ -52,10 +54,11 @@ public class BattleshipClient extends JFrame {
         setComponents();
         addComponents();
         setFrame();
-        //connectWithServer();
+        connectWithServer();
         getShipsCoordenates();
         setShips(ships, labelsMatrix);
-        //setReady();
+        setReady();
+        getServerShips();
     }
 
     public static void main(String args[]) {
@@ -91,6 +94,7 @@ public class BattleshipClient extends JFrame {
         title = new JLabel("Battleship", SwingConstants.CENTER);
         usernameLabel = new JLabel("Username", SwingConstants.CENTER);
         ships = new Ship[7];
+        serverShips = new Ship[7];
     }
 
     private void setComponents() {
@@ -293,7 +297,39 @@ public class BattleshipClient extends JFrame {
     }
     
     private void setReady() {
-        byte[] byffer = new String("ready").getBytes();
+        byte[] buffer = new String("ready").getBytes();
+        DatagramPacket packet = new DatagramPacket(buffer, buffer.length,
+                serverAddrs, Properties.PORT);
+        try {
+            client.send(packet);
+        } catch(IOException ex){
+            JOptionPane.showMessageDialog(null,
+                        "Cannot connect to server", "Oops" + ex.getMessage(),
+                        JOptionPane.ERROR_MESSAGE);
+            dispose();
+        }
+    }
+    
+    private void getServerShips(){
+        byte[] buffer = new byte[65535];
+        DatagramPacket packet;
+        ByteArrayInputStream bais;
+        ObjectInputStream ois;
+        try {
+            for(int i = 0; i < Properties.SHIPNAMES.length; i++){
+                packet = new DatagramPacket(buffer, 65535);
+                client.receive(packet);
+                bais = new ByteArrayInputStream(packet.getData());
+                ois = new ObjectInputStream(bais);
+                serverShips[i] = (Ship)ois.readObject();
+            }
+            setShips(serverShips, buttonsMatrix);
+        } catch(Exception ex){
+            JOptionPane.showMessageDialog(null,
+                        "Cannot connect to server", "Oops" + ex.getMessage(),
+                        JOptionPane.ERROR_MESSAGE);
+            dispose();
+        }
     }
 
 }
