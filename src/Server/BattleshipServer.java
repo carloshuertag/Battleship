@@ -68,12 +68,12 @@ public class BattleshipServer {
                         server.send(packet);
                     }
                     serverTurn = RANDOM.nextBoolean();
-                    System.out.println((serverTurn) ? "Server's turn" : "Client's turn");
                     buff = String.valueOf(serverTurn).getBytes();
                     packet = new DatagramPacket(buff, buff.length);
                     server.send(packet);
                     prevShoots = new ArrayList<>();
                     while(!end){
+                        System.out.println((serverTurn) ? "Server's turn" : "Client's turn");
                         if(serverTurn){
                             do {
                                 x = RANDOM.nextInt(10);
