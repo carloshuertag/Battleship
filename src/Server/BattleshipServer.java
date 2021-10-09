@@ -24,7 +24,7 @@ public class BattleshipServer {
 
     private static final Random RANDOM = new Random();
     private static boolean serverTurn, end;
-    private static int shipsLeft = 7, clientAttempts = 0;
+    private static int shipsLeft = 7, clientAttempts;
     private static byte[] buff;
     private static DatagramPacket packet;
     private static DatagramSocket server;
@@ -72,6 +72,7 @@ public class BattleshipServer {
                     packet = new DatagramPacket(buff, buff.length);
                     server.send(packet);
                     prevShoots = new ArrayList<>();
+                    clientAttempts = 0;
                     while(!end){
                         System.out.println((serverTurn) ? "Server's turn" : "Client's turn");
                         if(serverTurn){
@@ -130,14 +131,13 @@ public class BattleshipServer {
             for(Ship ship: ships){
                 if(Ship.isDamaged(ship, x, y)){
                     serverTurn = false;
+                    clientAttempts = clientAttempts + 1;
                     if(ship.getLife() == 0){
                         shipsLeft--;
                     }
-                    ++clientAttempts;
                     break;
                 } else {
                     serverTurn = true;
-                    clientAttempts = 0;
                 }
             }
             buff = String.valueOf(serverTurn).getBytes();
@@ -153,6 +153,10 @@ public class BattleshipServer {
             if(clientAttempts == 3){
                 clientAttempts = 0;
                 serverTurn = true;
+            } else {
+                if(serverTurn){
+                    clientAttempts = 0;
+                }
             }
         } else {
             throw new Exception("Client shoot failed");

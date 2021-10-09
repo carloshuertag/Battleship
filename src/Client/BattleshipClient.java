@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package Client;
 
 import java.awt.BorderLayout;
@@ -403,9 +398,9 @@ public class BattleshipClient extends JFrame {
 
     private void buttonHandler(int x, int y) {
         StringBuilder shoot = new StringBuilder();
-        shoot.append(x);
-        shoot.append(',');
         shoot.append(y);
+        shoot.append(',');
+        shoot.append(x);
         buffer = shoot.toString().getBytes();
         packet = new DatagramPacket(buffer, buffer.length, serverAddrs,
                 Properties.PORT);
