@@ -123,7 +123,7 @@ public class BattleshipServer {
         packet = new DatagramPacket(buff, 65535);
         server.receive(packet);
         clientShoot = new String(packet.getData(), 0, packet.getLength());
-        System.out.println("Client's shoot "+clientShoot);
+        System.out.println("Client's shoot " + clientShoot);
         if (clientShoot.substring(1, 2).equals(",")) {
             x = Integer.parseInt(clientShoot.substring(0, 1));
             y = Integer.parseInt(clientShoot.substring(2, 3));
@@ -133,6 +133,7 @@ public class BattleshipServer {
                     if(ship.getLife() == 0){
                         shipsLeft--;
                     }
+                    ++clientAttempts;
                     break;
                 } else {
                     serverTurn = true;
@@ -149,7 +150,7 @@ public class BattleshipServer {
                 System.out.println("Game over, client wins");
                 end = true;
             }
-            if(++clientAttempts == 3){
+            if(clientAttempts == 3){
                 clientAttempts = 0;
                 serverTurn = true;
             }

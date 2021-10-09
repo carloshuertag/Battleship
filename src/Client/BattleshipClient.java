@@ -95,8 +95,8 @@ public class BattleshipClient extends JFrame {
             shipsInfo[i] = new JLabel(String.valueOf(Properties.SHIPLENGTHS[i]));
         });
         turn = new JLabel("Turn: Username/PC");
-        attmpts = 1;
-        attempts = new JLabel("Attempts remaining: " + attmpts);
+        attmpts = 0;
+        attempts = new JLabel("Attempts remaining: " + (attmpts + 1));
         title = new JLabel("Battleship", SwingConstants.CENTER);
         usernameLabel = new JLabel("Username", SwingConstants.CENTER);
         ships = new Ship[7];
@@ -435,7 +435,7 @@ public class BattleshipClient extends JFrame {
             }
             trn |= attmpts == 3;
             if (trn) {
-                attmpts = 1;
+                attmpts = 0;
                 serverTurn();
             }
         } catch (Exception ex) {
