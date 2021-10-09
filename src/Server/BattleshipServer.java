@@ -136,6 +136,7 @@ public class BattleshipServer {
                     break;
                 } else {
                     serverTurn = true;
+                    clientAttempts = 0;
                 }
             }
             buff = String.valueOf(serverTurn).getBytes();

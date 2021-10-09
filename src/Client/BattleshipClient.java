@@ -342,7 +342,7 @@ public class BattleshipClient extends JFrame {
             x = Integer.parseInt(serverShoot.substring(0, 1));
             y = Integer.parseInt(serverShoot.substring(2, 3));
             for (Ship ship : ships) {
-                if (Ship.isDamaged(ship, y, x)) {
+                if (Ship.isDamaged(ship, x, y)) {
                     trn = true;
                     setCell(labelsMatrix[y][x], Color.RED, Color.BLACK);
                     if (ship.getLife() == 0) {
@@ -433,11 +433,9 @@ public class BattleshipClient extends JFrame {
                 dispose();
                 System.exit(0);
             }
-            if(attmpts == 3){
-                attmpts = 1;
-                trn = true;
-            }
+            trn |= attmpts == 3;
             if (trn) {
+                attmpts = 1;
                 serverTurn();
             }
         } catch (Exception ex) {
