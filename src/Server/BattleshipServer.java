@@ -24,7 +24,7 @@ public class BattleshipServer {
 
     private static final Random RANDOM = new Random();
     private static boolean serverTurn, end;
-    private static int shipsLeft = 7, clientAttempts = 1;
+    private static int shipsLeft = 7, clientAttempts = 0;
     private static byte[] buff;
     private static DatagramPacket packet;
     private static DatagramSocket server;
@@ -148,7 +148,10 @@ public class BattleshipServer {
                 System.out.println("Game over, client wins");
                 end = true;
             }
-            serverTurn |= ++clientAttempts == 3;
+            if(++clientAttempts == 3){
+                clientAttempts = 0;
+                serverTurn = true;
+            }
         } else {
             throw new Exception("Client shoot failed");
         }

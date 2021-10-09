@@ -382,9 +382,9 @@ public class BattleshipClient extends JFrame {
                 buttonsMatrix[i][j].addActionListener(e -> buttonHandler(i, j));
             });
         });
+        clientShipsLeft = serverShipsLeft = 7;
         buffer = new byte[65535];
         packet = new DatagramPacket(buffer, 65535);
-        clientShipsLeft = serverShipsLeft = 7;
         try {
             client.receive(packet);
             trn = Boolean.parseBoolean(new String(packet.getData(), 0, packet.getLength()));
@@ -433,7 +433,10 @@ public class BattleshipClient extends JFrame {
                 dispose();
                 System.exit(0);
             }
-            trn |= attmpts == 3;
+            if(attmpts == 3){
+                attmpts = 1;
+                trn = true;
+            }
             if (trn) {
                 serverTurn();
             }

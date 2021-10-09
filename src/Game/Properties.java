@@ -14,7 +14,7 @@ import java.util.List;
 public class Properties {
 
     public static final int DIMENSION = 10;
-    public static final String SERVER_IP = "127.0.0.1";
+    public static final String SERVER_IP = "192.168.3.12";
     public static final int PORT = 1234;
     public static final String[] SHIPNAMES = {"Submarine (S)", "Battleship (B)",
         "Cruiser Alpha (C)", "Cruiser Beta (C)", "Destroyer Alpha (D)",
