@@ -5,7 +5,6 @@
  */
 package Client;
 
-import Game.CellActionListener;
 import java.awt.BorderLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -24,6 +23,7 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.IntStream;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -50,6 +50,8 @@ public class BattleshipClient extends JFrame {
     private ByteArrayInputStream bais;
     private ObjectInputStream ois;
     private byte[] buffer;
+    private boolean trn;
+    private int serverShipsLeft, clientShipsLeft, attmpts;
 
     public BattleshipClient() {
         initPanels();
@@ -88,12 +90,13 @@ public class BattleshipClient extends JFrame {
         borders = BorderFactory.createLineBorder(Color.BLUE);
         shipsNames = new JLabel[7];
         shipsInfo = new JLabel[7];
-        for (int i = 0; i < 7; i++) {
+        IntStream.range(0, shipsNames.length).forEach(i -> {
             shipsNames[i] = new JLabel(Properties.SHIPNAMES[i]);
-            shipsInfo[i] = new JLabel("Unattacked");
-        }
+            shipsInfo[i] = new JLabel(String.valueOf(Properties.SHIPLENGTHS[i]));
+        });
         turn = new JLabel("Turn: Username/PC");
-        attempts = new JLabel("Attempts remaining: 1");
+        attmpts = 1;
+        attempts = new JLabel("Attempts remaining: " + attmpts);
         title = new JLabel("Battleship", SwingConstants.CENTER);
         usernameLabel = new JLabel("Username", SwingConstants.CENTER);
         ships = new Ship[7];
@@ -107,10 +110,10 @@ public class BattleshipClient extends JFrame {
 
     private void addComponents() {
         mainPanel.add(title, BorderLayout.NORTH);
-        for (int i = 0; i < 7; i++) {
+        IntStream.range(0, shipsNames.length).forEach(i -> {
             infoPanel.add(shipsNames[i]);
             infoPanel.add(shipsInfo[i]);
-        }
+        });
         infoPanel.add(turn);
         infoPanel.add(attempts);
         mainPanel.add(infoPanel, BorderLayout.WEST);
@@ -125,13 +128,13 @@ public class BattleshipClient extends JFrame {
         refLabel[1] = new JLabel("X, N");
         setCell(refLabel[1], Color.GRAY, Color.WHITE);
         userTable.add(refLabel[1]);
-        for (int i = 0; i < Properties.DIMENSION; i++) {
+        IntStream.range(0, Properties.DIMENSION).forEach(i -> {
             xs[i][1] = new JLabel(String.valueOf(i + 1));
             setCell(xs[i][1], Color.GRAY, Color.WHITE);
             userTable.add(xs[i][1]);
-        }
-        for (int i = 0; i < Properties.DIMENSION; i++) {
-            for (int j = 0; j < Properties.DIMENSION; j++) {
+        });
+        IntStream.range(0, Properties.DIMENSION).forEach(i -> {
+            IntStream.range(0, Properties.DIMENSION).forEach(j -> {
                 if (j == 0) {
                     ys[i][1] = new JLabel(String.valueOf((char) (i + 65)));
                     setCell(ys[i][1], Color.GRAY, Color.WHITE);
@@ -140,21 +143,21 @@ public class BattleshipClient extends JFrame {
                 labelsMatrix[i][j] = new JLabel("≈", SwingConstants.CENTER);
                 setCell(labelsMatrix[i][j], Color.CYAN, Color.BLUE);
                 userTable.add(labelsMatrix[i][j]);
-            }
-        }
+            });
+        });
     }
 
     private void setPcTable() {
         refLabel[0] = new JLabel("X, N");
         setCell(refLabel[0], Color.GRAY, Color.WHITE);
         pcTable.add(refLabel[0]);
-        for (int i = 0; i < Properties.DIMENSION; i++) {
+        IntStream.range(0, Properties.DIMENSION).forEach(i -> {
             xs[i][0] = new JLabel(String.valueOf(i + 1));
             setCell(xs[i][0], Color.GRAY, Color.WHITE);
             pcTable.add(xs[i][0]);
-        }
-        for (int i = 0; i < Properties.DIMENSION; i++) {
-            for (int j = 0; j < Properties.DIMENSION; j++) {
+        });
+        IntStream.range(0, Properties.DIMENSION).forEach(i -> {
+            IntStream.range(0, Properties.DIMENSION).forEach(j -> {
                 if (j == 0) {
                     ys[i][0] = new JLabel(String.valueOf((char) (i + 65)));
                     setCell(ys[i][0], Color.GRAY, Color.WHITE);
@@ -162,11 +165,9 @@ public class BattleshipClient extends JFrame {
                 }
                 buttonsMatrix[i][j] = new JButton("≈");
                 setCell(buttonsMatrix[i][j], Color.CYAN, Color.BLUE);
-                buttonsMatrix[i][j].addActionListener(
-                        new CellActionListener(i, j));
                 pcTable.add(buttonsMatrix[i][j]);
-            }
-        }
+            });
+        });
     }
 
     private void setCell(JComponent cell, Color bgColor, Color fgColor) {
@@ -200,26 +201,24 @@ public class BattleshipClient extends JFrame {
 
     private void hello() throws UnknownHostException, SocketException,
             IOException, Exception {
-        boolean flag = false;
+        boolean flag;
         do {
             username = JOptionPane.showInputDialog(null, "Enter your name",
                     "Welcome", JOptionPane.QUESTION_MESSAGE);
             flag = username.equals("");
         } while (flag);
         serverAddrs = InetAddress.getByName(Properties.SERVER_IP);
-        byte[] buffer = username.getBytes();
+        buffer = username.getBytes();
         client = new DatagramSocket();
         client.setReuseAddress(true);
-        packet = new DatagramPacket(buffer, buffer.length,
-                serverAddrs, Properties.PORT);
+        packet = new DatagramPacket(buffer, buffer.length, serverAddrs,
+                Properties.PORT);
         client.send(packet);
         buffer = new byte[65535];
-        packet = new DatagramPacket(buffer, buffer.length,
-                serverAddrs, Properties.PORT);
+        packet = new DatagramPacket(buffer, buffer.length, serverAddrs,
+                Properties.PORT);
         client.receive(packet);
-        if (new String(packet.getData(), 0, packet.getLength()).equals("start")) {
-            return;
-        } else {
+        if (!(new String(packet.getData(), 0, packet.getLength()).equals("start"))) {
             throw new Exception("Cannot connect to server, try again");
         }
     }
@@ -240,7 +239,7 @@ public class BattleshipClient extends JFrame {
                     y = JOptionPane.showInputDialog(null,
                             "Enter alphanumeric (A-J) initial coordante for "
                             + Properties.SHIPNAMES[i], "Enter coordenates",
-                            JOptionPane.QUESTION_MESSAGE).charAt(0) - 65;
+                            JOptionPane.QUESTION_MESSAGE).toUpperCase().charAt(0) - 65;
                     vertical = JOptionPane.showConfirmDialog(null,
                             "Confirm vertical alignment, or else it will be horizontal",
                             "Enter alignment", JOptionPane.YES_NO_OPTION,
@@ -276,7 +275,6 @@ public class BattleshipClient extends JFrame {
     private void setShips(Ship[] ships, JComponent[][] matrix) {
         int x, y;
         for (int i = 0; i < ships.length; i++) {
-            System.out.println(ships[i]);
             x = ships[i].getX();
             y = ships[i].getY();
             for (int j = 0; j < ships[i].getLength(); j++) {
@@ -290,7 +288,7 @@ public class BattleshipClient extends JFrame {
                 }
                 matrix[y][x].setForeground(Color.CYAN);
                 matrix[y][x].setOpaque(true);
-                if (ships[i].getVertical()) {
+                if (ships[i].isVertical()) {
                     y++;
                 } else {
                     x++;
@@ -300,9 +298,9 @@ public class BattleshipClient extends JFrame {
     }
 
     private void setReady() {
-        buffer = new String("ready").getBytes();
-        packet = new DatagramPacket(buffer, buffer.length,
-                serverAddrs, Properties.PORT);
+        buffer = "ready".getBytes();
+        packet = new DatagramPacket(buffer, buffer.length, serverAddrs,
+                Properties.PORT);
         try {
             client.send(packet);
         } catch (IOException ex) {
@@ -310,6 +308,7 @@ public class BattleshipClient extends JFrame {
                     "Cannot connect to server", "Oops" + ex.getMessage(),
                     JOptionPane.ERROR_MESSAGE);
             dispose();
+            System.exit(1);
         }
     }
 
@@ -328,62 +327,123 @@ public class BattleshipClient extends JFrame {
                     "Cannot connect to server", "Oops" + ex.getMessage(),
                     JOptionPane.ERROR_MESSAGE);
             dispose();
+            System.exit(1);
         }
     }
 
-    private void play() {
+    private void serverTurn() throws Exception {
+        String serverShoot;
+        int x, y;
         buffer = new byte[65535];
         packet = new DatagramPacket(buffer, 65535);
-        boolean t = false, end = false, flag = false;
-        int x = 0, y = 0;
-        String shoot = "";
-        List<String> prevShoots = new ArrayList<>();
+        client.receive(packet);
+        serverShoot = new String(packet.getData(), 0, packet.getLength());
+        if (serverShoot.substring(1, 2).equals(",")) {
+            x = Integer.parseInt(serverShoot.substring(0, 1));
+            y = Integer.parseInt(serverShoot.substring(2, 3));
+            for (Ship ship : ships) {
+                if (Ship.isDamaged(ship, y, x)) {
+                    trn = true;
+                    setCell(labelsMatrix[y][x], Color.RED, Color.BLACK);
+                    if (ship.getLife() == 0) {
+                        clientShipsLeft--;
+                        JOptionPane.showMessageDialog(null, ship.getName()
+                                + " is down", "Ship down",
+                                JOptionPane.INFORMATION_MESSAGE);
+                        if (clientShipsLeft == 0) {
+                            JOptionPane.showMessageDialog(null, "You loose",
+                                    "Game over", JOptionPane.INFORMATION_MESSAGE);
+                            dispose();
+                            System.exit(0);
+                        }
+                    }
+                } else {
+                    setCell(labelsMatrix[y][x], Color.BLUE, Color.WHITE);
+                    trn = false;
+                }
+            }
+            labelsMatrix[y][x].setText("x");
+        } else {
+            throw new Exception("Server shoot failed");
+        }
+        buffer = String.valueOf(trn).getBytes();
+        packet = new DatagramPacket(buffer, buffer.length, serverAddrs,
+                Properties.PORT);
+        client.send(packet);
+        buffer = String.valueOf(clientShipsLeft == 0).getBytes();
+        packet = new DatagramPacket(buffer, buffer.length, serverAddrs,
+                Properties.PORT);
+        client.send(packet);
+    }
+
+    private void play() {
+        IntStream.range(0, Properties.DIMENSION).forEach(i -> {
+            IntStream.range(0, Properties.DIMENSION).forEach(j -> {
+                buttonsMatrix[i][j].addActionListener(e -> buttonHandler(i, j));
+            });
+        });
+        buffer = new byte[65535];
+        packet = new DatagramPacket(buffer, 65535);
+        clientShipsLeft = serverShipsLeft = 7;
         try {
             client.receive(packet);
-            t = Boolean.parseBoolean(new String(packet.getData(), 0, packet.getLength()));
-            while (!end) {
-                if (t) { //ServerTurn
-
-                } else { //Client turn
-                    do {
-                        try {
-                            x = Integer.parseInt(JOptionPane.showInputDialog(null,
-                                    "Enter numeric (1-10) coordante to shoot",
-                                    "Enter coordenates",
-                                    JOptionPane.QUESTION_MESSAGE)) - 1;
-                            y = JOptionPane.showInputDialog(null,
-                                    "Enter alphanumeric (A-J) coordante to shoot ",
-                                    "Enter coordenates",
-                                    JOptionPane.QUESTION_MESSAGE).charAt(0) - 65;
-                            if (y > 9 || x > 9 || x < 0 || y < 0) {
-                                throw new Exception("Invalid coordenates, must be 0-10, A-J");
-                            }
-                            shoot = x + "," + y;
-                            if (prevShoots.contains(shoot)) {
-                                throw new Exception("Invalid coordenates, repeated shot");
-                            }
-                            prevShoots.add(shoot);
-                            flag = false;
-                        } catch (Exception ex) {
-                            JOptionPane.showMessageDialog(null,
-                                    "Invalid input, try again", "Oops! " + ex.getMessage(),
-                                    JOptionPane.ERROR_MESSAGE);
-                            flag = true;
-                        }
-                    } while (flag);
-                    buffer = shoot.getBytes();
-                    packet = new DatagramPacket(buffer, buffer.length);
-                    client.send(packet);
-
-                }
+            trn = Boolean.parseBoolean(new String(packet.getData(), 0, packet.getLength()));
+            if (trn) {
+                serverTurn();
             }
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(null,
-                    "Cannot connect to server", "Oops" + ex.getMessage(),
+                    "Fatal error at connection", "Oops" + ex.getMessage(),
                     JOptionPane.ERROR_MESSAGE);
             dispose();
+            System.exit(1);
         }
 
+    }
+
+    private void buttonHandler(int x, int y) {
+        StringBuilder shoot = new StringBuilder();
+        shoot.append(x);
+        shoot.append(',');
+        shoot.append(y);
+        buffer = shoot.toString().getBytes();
+        packet = new DatagramPacket(buffer, buffer.length, serverAddrs,
+                Properties.PORT);
+        try {
+            client.send(packet);
+            buffer = new byte[65535];
+            packet = new DatagramPacket(buffer, 65535);
+            client.receive(packet);
+            trn = Boolean.parseBoolean(new String(packet.getData(), 0, packet.getLength()));
+            buffer = new byte[65535];
+            packet = new DatagramPacket(buffer, 65535);
+            client.receive(packet);
+            serverShipsLeft = Integer.parseInt(new String(packet.getData(), 0, packet.getLength()));
+            if (!trn) {
+                attmpts++;
+                setCell(buttonsMatrix[x][y], Color.RED, Color.BLACK);
+            } else {
+                setCell(buttonsMatrix[x][y], Color.BLUE, Color.WHITE);
+            }
+            buttonsMatrix[x][y].setText("x");
+            buttonsMatrix[x][y].setEnabled(false);
+            if (serverShipsLeft == 0) {
+                JOptionPane.showMessageDialog(null, "You win", "Game over",
+                        JOptionPane.INFORMATION_MESSAGE);
+                dispose();
+                System.exit(0);
+            }
+            trn |= attmpts == 3;
+            if (trn) {
+                serverTurn();
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(null,
+                    "Fatal error at connection", "Oops" + ex.getMessage(),
+                    JOptionPane.ERROR_MESSAGE);
+            dispose();
+            System.exit(1);
+        }
     }
 
 }

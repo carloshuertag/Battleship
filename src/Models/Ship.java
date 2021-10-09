@@ -11,7 +11,7 @@ public class Ship implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private String name;
-    private int x, y, length;
+    private int x, y, length, life;
     private boolean vertical;
 
     public static boolean isValidPosition(List<Ship> ships, Ship newShip) {
@@ -21,7 +21,7 @@ public class Ship implements Serializable {
         Ship ship;
         int start, end, fixed, newStart, newFixed, newEnd;
         newEnd = newShip.getLength() - 1;
-        if (newShip.getVertical()) {
+        if (newShip.isVertical()) {
             newStart = newShip.getY();
             newFixed = newShip.getX();
         } else {
@@ -32,11 +32,11 @@ public class Ship implements Serializable {
         for (int i = 0; i < ships.size(); i++) {
             ship = ships.get(i);
             end = ship.getLength() - 1;
-            if (ship.getVertical()) {
+            if (ship.isVertical()) {
                 start = ship.getY();
                 fixed = ship.getX();
                 end += start;
-                if (newShip.getVertical()) {
+                if (newShip.isVertical()) {
                     if (((start <= newStart && newStart <= end)
                             || (start <= newEnd && newEnd <= end))
                             && fixed == newFixed) {
@@ -52,7 +52,7 @@ public class Ship implements Serializable {
                 start = ship.getX();
                 fixed = ship.getY();
                 end += start;
-                if (newShip.getVertical()) {
+                if (newShip.isVertical()) {
                     if ((start <= newFixed && newFixed <= end)
                             && (newStart <= fixed && fixed <= newEnd)) {
                         return false;
@@ -68,6 +68,27 @@ public class Ship implements Serializable {
         }
         return true;
     }
+    
+    public static boolean isDamaged(Ship ship, int x, int y){
+        int range = ship.getLength() - 1;
+        if(ship.isVertical()){
+            range += ship.getY();
+            if(ship.getX() == x && ship.getY() <= y && y >= range){
+                ship.setLife(ship.getLife() - 1);
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            range += ship.getX();
+            if(ship.getY() == y && ship.getX() <= x && x >= range){
+                ship.setLife(ship.getLife() - 1);
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
 
     public Ship() {
     }
@@ -77,6 +98,7 @@ public class Ship implements Serializable {
         this.x = x;
         this.y = y;
         this.length = length;
+        this.life = length;
         this.vertical = vertical;
     }
 
@@ -112,7 +134,15 @@ public class Ship implements Serializable {
         this.length = length;
     }
 
-    public boolean getVertical() {
+    public int getLife() {
+        return life;
+    }
+
+    public void setLife(int life) {
+        this.life = life;
+    }
+
+    public boolean isVertical() {
         return vertical;
     }
 
@@ -122,7 +152,7 @@ public class Ship implements Serializable {
 
     @Override
     public String toString() {
-        return "Ship{" + "name=" + name + ", x=" + x + ", y=" + y + ", length="
-                + length + ", vertical=" + vertical + '}';
+        return "Ship{" + "name=" + name + ", x=" + x + ", y=" + y + ", length=" + length + ", life=" + life + ", vertical=" + vertical + '}';
     }
+
 }
