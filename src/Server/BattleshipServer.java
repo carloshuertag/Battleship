@@ -86,6 +86,7 @@ public class BattleshipServer {
                                 sb.setLength(0);
                                 if(!prevShoots.contains(shoot)) {
                                     prevShoots.add(shoot);
+                                    flag = false;
                                 } else {
                                     flag = true;
                                 }
