@@ -329,46 +329,49 @@ public class BattleshipClient extends JFrame {
     private void serverTurn() throws Exception {
         String serverShoot;
         int x, y;
-        buffer = new byte[65535];
-        packet = new DatagramPacket(buffer, 65535);
-        client.receive(packet);
-        serverShoot = new String(packet.getData(), 0, packet.getLength());
-        if (serverShoot.substring(1, 2).equals(",")) {
-            x = Integer.parseInt(serverShoot.substring(0, 1));
-            y = Integer.parseInt(serverShoot.substring(2, 3));
-            for (Ship ship : ships) {
-                if (Ship.isDamaged(ship, x, y)) {
-                    trn = true;
-                    setCell(labelsMatrix[y][x], Color.RED, Color.BLACK);
-                    if (ship.getLife() == 0) {
-                        clientShipsLeft--;
-                        JOptionPane.showMessageDialog(null, ship.getName()
-                                + " is down", "Ship down",
-                                JOptionPane.INFORMATION_MESSAGE);
-                        if (clientShipsLeft == 0) {
-                            JOptionPane.showMessageDialog(null, "You loose",
-                                    "Game over", JOptionPane.INFORMATION_MESSAGE);
-                            dispose();
-                            System.exit(0);
+        while(trn){
+            buffer = new byte[65535];
+            packet = new DatagramPacket(buffer, 65535);
+            client.receive(packet);
+            serverShoot = new String(packet.getData(), 0, packet.getLength());
+            if (serverShoot.substring(1, 2).equals(",")) {
+                x = Integer.parseInt(serverShoot.substring(0, 1));
+                y = Integer.parseInt(serverShoot.substring(2, 3));
+                for (Ship ship : ships) {
+                    if (Ship.isDamaged(ship, x, y)) {
+                        trn = true;
+                        setCell(labelsMatrix[y][x], Color.RED, Color.BLACK);
+                        if (ship.getLife() == 0) {
+                            clientShipsLeft--;
+                            JOptionPane.showMessageDialog(null, ship.getName()
+                                    + " is down", "Ship down",
+                                    JOptionPane.INFORMATION_MESSAGE);
+                            if (clientShipsLeft == 0) {
+                                JOptionPane.showMessageDialog(null, "You loose",
+                                        "Game over", JOptionPane.INFORMATION_MESSAGE);
+                                dispose();
+                                System.exit(0);
+                            }
                         }
+                        break;
+                    } else {
+                        setCell(labelsMatrix[y][x], Color.BLUE, Color.WHITE);
+                        trn = false;
                     }
-                } else {
-                    setCell(labelsMatrix[y][x], Color.BLUE, Color.WHITE);
-                    trn = false;
                 }
+                labelsMatrix[y][x].setText("x");
+            } else {
+                throw new Exception("Server shoot failed");
             }
-            labelsMatrix[y][x].setText("x");
-        } else {
-            throw new Exception("Server shoot failed");
+            buffer = String.valueOf(trn).getBytes();
+            packet = new DatagramPacket(buffer, buffer.length, serverAddrs,
+                    Properties.PORT);
+            client.send(packet);
+            buffer = String.valueOf(clientShipsLeft == 0).getBytes();
+            packet = new DatagramPacket(buffer, buffer.length, serverAddrs,
+                    Properties.PORT);
+            client.send(packet);
         }
-        buffer = String.valueOf(trn).getBytes();
-        packet = new DatagramPacket(buffer, buffer.length, serverAddrs,
-                Properties.PORT);
-        client.send(packet);
-        buffer = String.valueOf(clientShipsLeft == 0).getBytes();
-        packet = new DatagramPacket(buffer, buffer.length, serverAddrs,
-                Properties.PORT);
-        client.send(packet);
     }
 
     private void play() {
@@ -398,9 +401,9 @@ public class BattleshipClient extends JFrame {
 
     private void buttonHandler(int x, int y) {
         StringBuilder shoot = new StringBuilder();
-        shoot.append(y);
-        shoot.append(',');
         shoot.append(x);
+        shoot.append(',');
+        shoot.append(y);
         buffer = shoot.toString().getBytes();
         packet = new DatagramPacket(buffer, buffer.length, serverAddrs,
                 Properties.PORT);

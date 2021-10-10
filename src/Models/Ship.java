@@ -73,7 +73,7 @@ public class Ship implements Serializable {
         int range = ship.getLength() - 1;
         if(ship.isVertical()){
             range += ship.getY();
-            if(ship.getX() == x && ship.getY() <= y && y >= range){
+            if(ship.getX() == x && ship.getY() <= y && y <= range){
                 ship.setLife(ship.getLife() - 1);
                 return true;
             } else {
@@ -81,7 +81,7 @@ public class Ship implements Serializable {
             }
         } else {
             range += ship.getX();
-            if(ship.getY() == y && ship.getX() <= x && x >= range){
+            if(ship.getY() == y && ship.getX() <= x && x <= range){
                 ship.setLife(ship.getLife() - 1);
                 return true;
             } else {

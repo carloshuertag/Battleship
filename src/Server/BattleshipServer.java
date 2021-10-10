@@ -128,6 +128,7 @@ public class BattleshipServer {
         if (clientShoot.substring(1, 2).equals(",")) {
             x = Integer.parseInt(clientShoot.substring(0, 1));
             y = Integer.parseInt(clientShoot.substring(2, 3));
+            serverTurn = true;
             for(Ship ship: ships){
                 if(Ship.isDamaged(ship, x, y)){
                     serverTurn = false;
@@ -136,8 +137,6 @@ public class BattleshipServer {
                         shipsLeft--;
                     }
                     break;
-                } else {
-                    serverTurn = true;
                 }
             }
             buff = String.valueOf(serverTurn).getBytes();
