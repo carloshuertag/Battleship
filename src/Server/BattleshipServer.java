@@ -39,7 +39,7 @@ public class BattleshipServer {
         StringBuilder sb = new StringBuilder();
         boolean flag = false;
         boolean hit_target = false;
-        int x=0, y=0, op, cont=0;
+        int x = 0, y = 0, op;
         try {
             server = new DatagramSocket(Properties.PORT, InetAddress.getByName(Properties.SERVER_IP));
             server.setReuseAddress(true);
@@ -74,117 +74,128 @@ public class BattleshipServer {
                     server.send(packet);
                     prevShoots = new ArrayList<>();
                     clientAttempts = 0;
-                    while(!end){
-                        System.out.println((serverTurn) ? "Server's turn" : username+"'s turn");
-                        if(serverTurn){
-                            if(hit_target)
-                            {
+                    while (!end) {
+                        System.out.println((serverTurn) ? "Server's turn" : username + "'s turn");
+                        if (serverTurn) {
+                            if (hit_target) {
                                 do {
-                                    if(x>0 && y>0 && x<9 && y<9)
-                                    {
-                                    op = RANDOM.nextInt(4);
-                                    switch(op)
-                                    {
-                                        case 0: x=x+1; break;
-                                        case 1: y=y+1; break;
-                                        case 2: x=x-1; break;
-                                        case 3: y=y-1; break;
+                                    if (x > 0 && y > 0 && x < 9 && y < 9) {
+                                        op = RANDOM.nextInt(4);
+                                        switch (op) {
+                                            case 0:
+                                                x = x + 1;
+                                                break;
+                                            case 1:
+                                                y = y + 1;
+                                                break;
+                                            case 2:
+                                                x = x - 1;
+                                                break;
+                                            case 3:
+                                                y = y - 1;
+                                                break;
+                                        }
+                                    } else if (x > 0 && y > 0 && x >= 9 && y < 9) {
+                                        op = RANDOM.nextInt(3);
+                                        switch (op) {
+                                            case 0:
+                                                x = x - 1;
+                                                break;
+                                            case 1:
+                                                y = y + 1;
+                                                break;
+                                            case 2:
+                                                y = y - 1;
+                                                break;
+                                        }
+                                    } else if (x > 0 && y > 0 && x < 9 && y >= 9) {
+                                        op = RANDOM.nextInt(3);
+                                        switch (op) {
+                                            case 0:
+                                                x = x + 1;
+                                                break;
+                                            case 1:
+                                                x = x - 1;
+                                                break;
+                                            case 2:
+                                                y = y - 1;
+                                                break;
+                                        }
+                                    } else if (x <= 0 && y > 0 && x < 9 && y < 9) {
+                                        op = RANDOM.nextInt(3);
+                                        switch (op) {
+                                            case 0:
+                                                x = x + 1;
+                                                break;
+                                            case 1:
+                                                y = y + 1;
+                                                break;
+                                            case 2:
+                                                y = y - 1;
+                                                break;
+                                        }
+                                    } else if (x > 0 && y <= 0 && x < 9 && y < 9) {
+                                        op = RANDOM.nextInt(3);
+                                        switch (op) {
+                                            case 0:
+                                                y = y + 1;
+                                                break;
+                                            case 1:
+                                                x = x + 1;
+                                                break;
+                                            case 2:
+                                                x = x - 1;
+                                                break;
+                                        }
+                                    } else if (x <= 0 && y <= 0) {
+                                        op = RANDOM.nextInt(2);
+                                        switch (op) {
+                                            case 0:
+                                                y = y + 1;
+                                                break;
+                                            case 1:
+                                                x = x + 1;
+                                                break;
+                                        }
+                                    } else if (x >= 9 && y >= 9) {
+                                        op = RANDOM.nextInt(2);
+                                        switch (op) {
+                                            case 0:
+                                                y = y - 1;
+                                                break;
+                                            case 1:
+                                                x = x - 1;
+                                                break;
+                                        }
                                     }
+                                    sb.append(x);
+                                    sb.append(',');
+                                    sb.append(y);
+                                    shoot = sb.toString();
+                                    sb.setLength(0);
+                                    if (!prevShoots.contains(shoot)) {
+                                        prevShoots.add(shoot);
+                                        flag = false;
+                                    } else {
+                                        flag = true;
                                     }
-                                else
-                                    if(x>0 && y>0 && x>=9 && y<9)
-                                    {
-                                    op = RANDOM.nextInt(3);
-                                    switch(op)
-                                    {
-                                        case 0: x=x-1; break;
-                                        case 1: y=y+1; break;
-                                        case 2: y=y-1; break;
+                                } while (flag);
+                            } else {
+                                do {
+                                    x = RANDOM.nextInt(10);
+                                    y = RANDOM.nextInt(10);
+                                    sb.append(x);
+                                    sb.append(',');
+                                    sb.append(y);
+                                    shoot = sb.toString();
+                                    sb.setLength(0);
+                                    if (!prevShoots.contains(shoot)) {
+                                        prevShoots.add(shoot);
+                                        flag = false;
+                                    } else {
+                                        flag = true;
                                     }
-                                    }
-                                else
-                                    if(x>0 && y>0 && x<9 && y>=9)
-                                    {
-                                    op = RANDOM.nextInt(3);
-                                    switch(op)
-                                    {
-                                        case 0: x=x+1; break;
-                                        case 1: x=x-1; break;
-                                        case 2: y=y-1; break;
-                                    }
-                                    }
-                                else
-                                    if(x<=0 && y>0 && x<9 && y<9)
-                                    {
-                                    op = RANDOM.nextInt(3);
-                                    switch(op)
-                                    {
-                                        case 0: x=x+1; break;
-                                        case 1: y=y+1; break;
-                                        case 2: y=y-1; break;
-                                    }
-                                    }
-                                else
-                                    if(x>0 && y<=0 && x<9 && y<9)
-                                    {
-                                    op = RANDOM.nextInt(3);
-                                    switch(op)
-                                    {
-                                        case 0: y=y+1; break;
-                                        case 1: x=x+1; break;
-                                        case 2: x=x-1; break;
-                                    }
-                                    }
-                                else
-                                    if(x<=0 && y<=0)
-                                    {
-                                    op = RANDOM.nextInt(2);
-                                    switch(op)
-                                    {
-                                        case 0: y=y+1; break;
-                                        case 1: x=x+1; break;
-                                    }
-                                    }
-                                 else
-                                    if(x>=9 && y>=9)
-                                    {
-                                    op = RANDOM.nextInt(2);
-                                    switch(op)
-                                    {
-                                        case 0: y=y-1; break;
-                                        case 1: x=x-1; break;
-                                    }
-                                    }
-                                
-                                sb.append(x);
-                                sb.append(',');
-                                sb.append(y);
-                                shoot = sb.toString();
-                                sb.setLength(0);
-                                if(!prevShoots.contains(shoot)) {
-                                    prevShoots.add(shoot);
-                                    flag = false;
-                                } else {
-                                    flag = true;
-                                }
-                            } while(flag);
-                            }
-                            else{
-                            do {
-                                x = RANDOM.nextInt(10);
-                                y = RANDOM.nextInt(10);
-                                sb.append(x);
-                                sb.append(',');
-                                sb.append(y);
-                                shoot = sb.toString();
-                                sb.setLength(0);
-                                if(!prevShoots.contains(shoot)) {
-                                    prevShoots.add(shoot);
-                                    flag = false;
-                                } else {
-                                    flag = true;
-                                }
-                            } while(flag);
+                                } while (flag);
                             }
                             buff = shoot.getBytes();
                             packet = new DatagramPacket(buff, buff.length);
@@ -198,14 +209,8 @@ public class BattleshipServer {
                             packet = new DatagramPacket(buff, buff.length);
                             server.receive(packet);
                             end = Boolean.parseBoolean(new String(packet.getData(), 0, packet.getLength()));
-                            System.out.println((end) ? "Game over, server wins": "Ships left: " + shipsLeft);
-                            if(serverTurn){
-                                hit_target = true;
-                            }
-                            else
-                            {
-                                hit_target = false;
-                            }
+                            System.out.println((end) ? "Game over, server wins" : "Ships left: " + shipsLeft);
+                            hit_target = serverTurn;
                         } else {
                             clientTurn(username);
                         }
@@ -219,8 +224,8 @@ public class BattleshipServer {
             e.printStackTrace();
         }
     }
-    
-    private static void clientTurn(String username) throws Exception{
+
+    private static void clientTurn(String username) throws Exception {
         String clientShoot;
         int x, y;
         buff = new byte[65535];
@@ -232,11 +237,11 @@ public class BattleshipServer {
             x = Integer.parseInt(clientShoot.substring(0, 1));
             y = Integer.parseInt(clientShoot.substring(2, 3));
             serverTurn = true;
-            for(Ship ship: ships){
-                if(Ship.isDamaged(ship, x, y)){
+            for (Ship ship : ships) {
+                if (Ship.isDamaged(ship, x, y)) {
                     serverTurn = false;
                     clientAttempts = clientAttempts + 1;
-                    if(ship.getLife() == 0){
+                    if (ship.getLife() == 0) {
                         shipsLeft--;
                     }
                     break;
@@ -248,24 +253,23 @@ public class BattleshipServer {
             buff = String.valueOf(shipsLeft).getBytes();
             packet = new DatagramPacket(buff, buff.length);
             server.send(packet);
-            if(shipsLeft == 0){
+            if (shipsLeft == 0) {
                 System.out.println("Game over, " + username + " wins");
                 end = true;
             }
-            if(clientAttempts == 3){
+            if (clientAttempts == 3) {
                 clientAttempts = 0;
                 serverTurn = true;
             } else {
-                if(serverTurn){
+                if (serverTurn) {
                     clientAttempts = 0;
                 }
             }
         } else {
-            throw new Exception( username + "shoot failed");
+            throw new Exception(username + "shoot failed");
         }
     }
-    
-    
+
     private static void setShipsCoordenates(Ship[] ships) {
         int x, y;
         boolean flag = false, vertical = false;

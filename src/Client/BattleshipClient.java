@@ -46,7 +46,7 @@ public class BattleshipClient extends JFrame {
     private ObjectInputStream ois;
     private byte[] buffer;
     private boolean trn;
-    private int serverShipsLeft, clientShipsLeft, attmpts;
+    private int serverShipsLeft, clientShipsLeft, attmpts, serverAttempts;
 
     public BattleshipClient() {
         initPanels();
@@ -329,7 +329,7 @@ public class BattleshipClient extends JFrame {
     private void serverTurn() throws Exception {
         String serverShoot;
         int x, y;
-        while(trn){
+        while (trn) {
             buffer = new byte[65535];
             packet = new DatagramPacket(buffer, 65535);
             client.receive(packet);
@@ -339,7 +339,7 @@ public class BattleshipClient extends JFrame {
                 y = Integer.parseInt(serverShoot.substring(2, 3));
                 for (Ship ship : ships) {
                     if (Ship.isDamaged(ship, x, y)) {
-                        trn = true;
+                        ++serverAttempts;
                         setCell(labelsMatrix[y][x], Color.RED, Color.BLACK);
                         if (ship.getLife() == 0) {
                             clientShipsLeft--;
@@ -362,6 +362,10 @@ public class BattleshipClient extends JFrame {
                 labelsMatrix[y][x].setText("x");
             } else {
                 throw new Exception("Server shoot failed");
+            }
+            if (trn && serverAttempts == 3) {
+                trn = false;
+                serverAttempts = 0;
             }
             buffer = String.valueOf(trn).getBytes();
             packet = new DatagramPacket(buffer, buffer.length, serverAddrs,
