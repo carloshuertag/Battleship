@@ -426,8 +426,6 @@ public class BattleshipClient extends JFrame {
                 setCell(buttonsMatrix[x][y], Color.RED, Color.BLACK);
                 JOptionPane.showMessageDialog(null, "Your ship was shot", "Importabr notice",
                         JOptionPane.INFORMATION_MESSAGE);
-                dispose();
-                System.exit(0);
             } else {
                 setCell(buttonsMatrix[x][y], Color.BLUE, Color.WHITE);
             }
