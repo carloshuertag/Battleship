@@ -341,6 +341,8 @@ public class BattleshipClient extends JFrame {
                     if (Ship.isDamaged(ship, x, y)) {
                         ++serverAttempts;
                         setCell(labelsMatrix[y][x], Color.RED, Color.BLACK);
+                        JOptionPane.showMessageDialog(null, "Your ship was shot", "Importabr notice",
+                        JOptionPane.INFORMATION_MESSAGE);
                         if (ship.getLife() == 0) {
                             clientShipsLeft--;
                             JOptionPane.showMessageDialog(null, ship.getName()
@@ -424,8 +426,6 @@ public class BattleshipClient extends JFrame {
             if (!trn) {
                 attmpts++;
                 setCell(buttonsMatrix[x][y], Color.RED, Color.BLACK);
-                JOptionPane.showMessageDialog(null, "Your ship was shot", "Importabr notice",
-                        JOptionPane.INFORMATION_MESSAGE);
             } else {
                 setCell(buttonsMatrix[x][y], Color.BLUE, Color.WHITE);
             }
